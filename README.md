@@ -12,5 +12,10 @@ Ensure you are in the root folder
 `sam build --use-container`
 
 ##### SAM Deploy:
-`sam deploy template.yaml --s3-bucket REPLACE_ME --stack-name REPLACE_ME --parameter-overrides ParameterKey=parS3BucketForWebSite,ParameterValue=REPLACE_ME --capabilities CAPABILITY_IAM`
+
+Create a s3 bucket for hosting the CloudFormation template created by SAM and make a note of it. This will be used as value of the input parameter "--s3-bucket".
+
+Update the below command with appropriate CloudFormation stack name and valid unique s3 bucket name in the "ParameterValue".
+
+`sam deploy template.yaml --s3-bucket s3-BUCKET-NAME-FOR-CLOUDFORMATION-TEMPLATE --stack-name CLOUDFORMATION-STACK-NAME --parameter-overrides ParameterKey=parS3BucketForWebSite,ParameterValue=s3-BUCKET-NAME-FOR-WEBSITE-HOSTING --capabilities CAPABILITY_IAM`
       
