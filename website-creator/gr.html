@@ -1,0 +1,444 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Amazon Connect - Instance API's</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="utf-8" http-equiv="encoding">
+    <link href="css/style.css" rel="stylesheet" type="text/css" />
+    
+    <script src=https://cdn.jsdelivr.net/npm/jquery@3.5/dist/jquery.min.js></script>
+    
+    <script src="js/gr.js"></script>
+    <script src="js/aws-sdk.min-dr.js"></script>
+
+    <script src=https://cdn.jsdelivr.net/npm/dna.js@1.6/dist/dna.min.js></script>
+    <script src=https://cdn.jsdelivr.net/npm/web-ignition@1.2/dist/library.min.js></script>
+    
+    <link rel=stylesheet href=https://cdn.jsdelivr.net/npm/pretty-print-json@0.2/dist/pretty-print-json.css>
+    <script src=https://cdn.jsdelivr.net/npm/pretty-print-json@0.2/dist/pretty-print-json.js></script>
+    <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>    
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.21/sl-1.3.1/datatables.min.css"/>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.21/sl-1.3.1/datatables.min.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    
+<style>
+    #section-rp-main {
+        padding: 10px;
+        max-width: 250px;
+        height: 900px;
+        margin-left: 0px;
+        float: left;
+        overflow: auto;
+    }
+    #section-json-output {
+        padding: 10px;
+        max-width: 550px;
+        height: 900px;
+        margin-left: 0px;
+        float: left;
+    }
+    
+    #section-rp-list {
+        padding: 10px;
+        max-width: 600px;
+        height: 900px;
+        margin-left: 0px;
+        float: left;
+    }
+    
+    #rpFormatted{
+        white-space: break-spaces;
+        word-break: break-word;
+    }
+    #rpDivFormatted{
+        overflow: scroll;
+        height: 830px;
+    }        
+    #manageRPdialog{
+        display: flex;    align-items: center;  justify-content: center;    
+    }
+    table.tblDetails {
+      border-collapse: collapse;
+      width: 700px;
+    }
+    
+    table.tblDetails td, table.tblDetails th {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+    
+    table.tblDetails tr:nth-child(even){background-color: #f2f2f2;}
+    
+    table.tblDetails tr:hover {background-color: #ddd;}
+    
+    table.tblDetails th {
+      padding-top: 12px;
+      padding-bottom: 12px;
+      text-align: left;
+      color: black;
+    }
+    table.tblDetails label{
+        display: inline-block;
+        float: right;
+        height: 1em;
+        line-height: 1em;
+        padding: 6px 0 0;
+        width: 100%; 
+        font-size: 1em;
+        margin: 5px 0;
+        clear: both;
+    }
+    .spnLeft {
+        display: block;
+        float: left;
+        font-weight: bold;
+    }
+    
+    .spnRight {
+        display: block;
+        float: right;
+        font-weight: bold;
+        color: blue
+    }
+    .btnOptions{
+        width: 200px;
+    }    
+    </style>
+    
+</head>
+
+<body>
+
+<!--navbar div with the id-->
+    <section id="section-rp-main">
+        <form>
+         <fieldset>
+            <legend>Amazon Connect Global Resiliency APIs</legend>
+            <div>
+               <input type="button" id="awsConfiguration" value="AWS Configurations">
+               <input type="button" id="listPhoneNumbers" value="List PhoneNumbers">
+               <input type="button" id="listPhoneNumbersTDG" value="List PhoneNumbers by TDG">
+               <input type="button" id="listTDG" value="List TDGs">
+               <input type="button" id="createTDG" value="Create TDG">
+               <input type="button" id="describeTDG" value="Describe TDG">
+               <input type="button" id="getTDG" value="Allocate Traffic">
+               <input type="button" id="claimPhoneNumber" value="Claim a phone number">
+               <input type="button" id="describePhoneNumber" value="Describe phone number">   
+               <input type="button" id="updatePhoneNumber" value="Update phone number">
+               <input type="button" id="associatePhoneNumberContactFlow" value="Associate contact flow">
+               <input type="button" id="disAssociatePhoneNumberContactFlow" value="Disassociate contact flow">
+               <input type="button" id="releasePhoneNumber" value="Release phone number">               
+               <input type="button" id="replicateInstance" value="Replicate Instance">               
+               <input type="button" id="deleteTDG" value="Delete TDG">
+               <!-- <input type="button" id="deleteInstance" value="Delete Instance"> -->
+            </div>               
+         </fieldset>
+         </form>
+    </section>
+    <section id="section-rp-list">
+        <legend>Selected Traffic Distribution Group(TDG) </legend>
+        <input type="text" id="selectedTDG" value="" > 
+        <div style="height: 90%;  overflow: scroll;">
+            <table id="qcListTable" style="width:100%;border:1px;height:80%" class="cell-border compact stripe" /></table>
+        </div>
+    </section>
+    <section id="section-rp-list">
+        <legend>Selected Phone Number </legend>
+        <input type="text" id="selectedPhoneNumber" value="" > 
+        <div style="height: 90%;  overflow: scroll;">
+            <table id="phListTable" style="width:100%;border:1px;height:80%" class="cell-border compact stripe" /></table>
+        </div>
+        
+    </section>
+
+    <section id="section-json-output">
+        <legend>JSON Output</legend>
+        <div id="rpDivFormatted"><pre id="rpFormatted"></pre></div>
+    </section>
+
+    <div id="dialog" title="Waiting">
+          <span id="waitingSpan">Waiting for server to respond</span>
+    </div>
+    <div id="resultDialog" title="API Result">
+          <span id="resultSpan"></span>
+    </div>
+    
+    <!--  This is the beginning of tdg dialog -->
+    <div id="dlgTDG" title="Traffic Distribution Group">
+              <form name="frmTDGCreate" id="frmTDGCreate">
+              <fieldset class="agent-info">
+                <legend>TDG configuration</legend>
+                <div>
+                  <table class='tblDetails' style="width:90%;">
+                    <tbody>
+                      <tr>
+                        <td> Name : </td>
+                        <td><input name="tdgName" type="text" id="tdgName" placeholder="Name"></td>
+                        <td> Description :</td>
+                        <td><input name="tdgDescription" type="text" id="tdgDescription" placeholder="Description"></td>
+                      </tr>
+                     </tbody>
+                   </table>
+                   <button class="btn btnOptions" type="button" id="btnCreateTDG" > Create</button>
+                </div>
+               </fieldset>
+             </form>
+
+    </div>    
+    <!--  This is the end of tdg dialog -->    
+
+    <!--  This is the beginning of tdg dialog percentage allocation-->
+    <div id="dlgTDGModify" title="Traffic Distribution Group Allocations">
+              <form name="frmTDGModify" id=""frmTDGModify"">
+              <fieldset class="agent-info">
+                <legend>Update Allocations</legend>
+                <div>
+                  <table class='tblDetails' style="width:100%;">
+                    <tbody>
+                      <tr>
+                        <td> Region : </td>
+                        <td><input name="txtRegion1" type="text" id="txtRegion1" placeholder="Region" readonly></td>
+                        <td> Percentage :</td>
+                        <td><input name="txtPercentage1" type="text" id="txtPercentage1" placeholder="Percentage" onkeypress="return isNumber(event)"></td>
+                      </tr>
+                      <tr>
+                        <td> Region : </td>
+                        <td><input name="txtRegion2" type="text" id="txtRegion2" placeholder="Region" readonly></td>
+                        <td> Percentage :</td>
+                        <td><input name="txtPercentage2" type="text" id="txtPercentage2" placeholder="Percentage" onkeypress="return isNumber(event)"></td>
+                      </tr>
+                     </tbody>
+                   </table>
+                   <button class="btn btnOptions" type="button" id="btnModifyTDG" > Update</button>
+                </div>
+               </fieldset>
+             </form>
+
+    </div>    
+    <!--  This is the end of tdg dialog percentage allocation-->    
+
+<!--  This is the beginning of instance replication dialog -->
+    <div id="dlgInstanceReplica" title="Instance Replication">
+              <form name="frmReplica" id="frmReplica">
+              <fieldset class="agent-info">
+                <legend>Instance Replication</legend>
+                <div>
+                  <table class='tblDetails' style="width:90%;">
+                    <tbody>
+                      <tr>
+                        <td> Name : </td>
+                        <td><input name="txtReplicaName" type="text" id="txtReplicaName" placeholder="Name"></td>
+                        <td> Region :</td>
+                        <td><input name="txtReplicaRegion" type="text" id="txtReplicaRegion" placeholder="Region"></td>
+                      </tr>
+                     </tbody>
+                   </table>
+                   <button class="btn btnOptions" type="button" id="btnCreateInstanceReplica" > Create Replica</button>
+                </div>
+               </fieldset>
+             </form>
+
+    </div>    
+    <!--  This is the end of instance replication dialog -->
+
+<!--  This is the beginning of update phone number dialog -->
+    <div id="dlgUpdatePhoneNumber" title="Phone Number Updates">
+              <form name="frmUpdatePH" id="frmUpdatePH">
+              <fieldset class="agent-info">
+                <legend>Phone Number Update</legend>
+                <div>
+                  <table class='tblDetails' style="width:90%;">
+                    <tbody>
+                      <tr>
+                        <td> Instance ARN : </td>
+                        <td><input name="txtInstanceARN" type="text" id="txtInstanceARN" placeholder="Instance ARN"></td>
+                        <td> <button class="btn btnOptions" type="button" id="btnUpdatePhoneNumber2Instance" >Update</button> </td>
+                      </tr>
+                      <tr>
+                        <td> TDG :</td>
+                        <td>
+                        	<select id="sltTDGs">
+                        		<option value="-">-</option>
+                        	</select>
+                        </td>
+                        <td> <button class="btn btnOptions" type="button" id="btnUpdatePhoneNumber2TDG" >Update</button> </td>
+                      </tr>
+                     </tbody>
+                   </table>
+                   
+                </div>
+               </fieldset>
+             </form>
+
+    </div>    
+    <!--  This is the end of instance replication dialog -->    
+    
+    <!--  This is the beginning of claim number dialog -->
+    <div id="phClaimDialog" title="Claim a Phone Number">
+              <form name="phClaimForm" id="phClaimForm">
+              <fieldset class="agent-info">
+                <legend>Phone Number search</legend>
+                 <div id="tabs-1">
+
+                  <table class='tblDetails' style="width: 300px;">
+                  	<thead>
+                  		<tr>
+                  			<th>Type</th>
+                  			<th>Country</th>
+                  			<th>Prefix</th>
+                  		</tr>
+                  	</thead>
+                    <tbody>
+                      <tr>
+                        <td>
+                        	<select id="sltPhoneNumberType">
+                        		<option value="DID">DID</option>
+                        		<option value="TOLL_FREE">TOLL_FREE	</option>
+                        	</select>
+                        </td>
+                        <td>
+                          <select id="sltCountry">
+                        		<option value="US">United States</option>
+                        		<option value="AU">Australia</option>
+                        		<option value="FR">France</option>
+                        	</select>
+                        </td>
+                        <td>
+                          <input name="txtPrefix" type="text" id="txtPrefix" placeholder="Prefix" >
+                        </td>
+                      </tr>
+                     </tbody>                     
+                   </table>
+                   <!--  <table id="phClaimPhoneNumberTable" style="width:20%;border:1px;height:80%" class="cell-border compact stripe" /></table>-->
+                   <table>
+                   	<tbody>
+                   		<tr>
+                   			<td>Phone Number :</td>
+                   			<td>
+                   				<select id="sltPhoneNumbersToClaim">
+                        			<option value="-">-</option>
+                        		</select>                   				
+                   			</td>
+                   			<td>Description : </td>
+                   			<td colspan=3>
+								<input name="txtDescription" type="text" id="txtDescription" placeholder="Description" style="width: 100%;">                   			
+							</td>
+                   			<!--  <td>Contact Flow : </td>
+                   			<td>
+                   				<select id="sltContactFlowToAssociate">
+                        			<option value="-">-</option>
+                        		</select>                  				
+                   			</td>-->
+                   		</tr>
+                   		<tr>
+                   			<td>TDG : </td>
+                   			<td colspan=3>
+								<select id="sltTDG">
+                        			<option value="-">-</option>
+                        		</select>                      			
+							</td>
+                   		</tr>
+                   		
+                   		<!-- <tr>
+                   			<td>Description : </td>
+                   			<td colspan=3>
+								<input name="txtDescription" type="text" id="txtDescription" placeholder="Description" style="width: 100%;">                   			
+							</td>
+                   		</tr> -->
+                   		
+                   	</tbody>	                   		
+                   </table>
+                   <button class="btn btnOptions" type="button" id="btnSearchAvailableNumber" > Search phone number(s)</button>
+                   <button class="btn btnOptions" type="button" id="btnClaim" > Claim phone number</button>
+                   <!--  <button class="btn btnOptions" type="button" id="btnClaimAndAssociate" style="width: 250px;">Claim and associate contact flow</button>-->
+                </div>
+               </fieldset>
+             </form>
+
+    </div>    
+    <!--  This is the end of claim number dialog -->
+  
+      <!--  This is the beginning of contact dialog -->
+    <div id="phAssociateCFDialog" title="Associate Contact Flow">
+              <form name="phAssociateForm" id="phAssociateForm">
+              <fieldset class="agent-info">
+                <legend>Choose the Contact flow to associate</legend>
+                 <div id="tabs-1">
+                   <table>
+                   	<tbody>
+                   		<tr>
+                   			<td>Contact Flow : </td>
+                   			<td>
+                   				<select id="sltContactFlowToAssociate">
+                        			<option value="-">-</option>
+                        		</select>                  				
+                   			</td>
+                   		</tr>
+                   	</tbody>	                   		
+                   </table>
+                   <button class="btn btnOptions" type="button" id="btnAssociateCF" > Associate Contact Flow</button>
+                </div>
+               </fieldset>
+             </form>
+
+    </div>    
+    <!--  This is the end of contact flow dialog -->
+            
+    <!-- Beginning of AWS Configurations -->
+    <div id="configDialog" title="AWS IAM Credentials">
+         <form  name="AWSIAMInfo" id="AWSIAMInfo" autocomplete="on">
+              <fieldset class="config-info">
+                   <legend>Enter AWS credentials for Global Resiliency</legend>
+                      <div>
+                      <table>
+                        <tbody>
+                          <tr>
+                            <td>
+                              <label for="dlgSourceAccessKey">Access Key : </label>
+                            </td>
+                            <td>
+                              <input name="dlgSourceAccessKey" type="text" id="dlgSourceAccessKey" placeholder="Access Key">
+                            </td>
+                            <td>
+                                <label for="dlgSourceRegion">Region : </label>
+                            </td>
+                            <td>
+                              <input name="dlgSourceRegion" type="text" id="dlgSourceRegion" placeholder="Region">
+                            </td>
+                            </tr>
+                            <tr>
+                            <td>
+                              <label for="dlgSourceSecretKey">Secret Key : </label>
+                            </td>
+                            <td colspan=3>
+                              <input name="dlgSourceSecretKey" type="text" id="dlgSourceSecretKey" placeholder="Secret Key" style="width:100%;">
+                            </td>
+                            
+                            </tr>
+                            <tr>
+                            <td>
+                              <label for="dlgInstanceId">Instance ARN : </label>
+                            </td>
+                            <td colspan=3>
+                              <input name="dlgInstanceId" type="text" id="dlgInstanceId" placeholder="Instance Id" style="width:100%;">
+                            </td>
+                            </tr>
+                            
+                          </tbody>
+                        </table>
+                   </div>
+              </fieldset>
+              <span id="spnAWSMessage" style="color: red;font-weight: bold;float:left"></span>
+              <button class="btn" type="button" id="btnConfiguration" style="width: 200px;float:right"> Save Configurations </button>
+              <!--  <button class="btn" type="button" id="btnPrefillConfiguration" style="width: 200px;float:right"> Set Configurations </button>-->
+           </form>
+     </div>
+    <div id="confirmDialog" title="Delete?">
+      <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>
+      		Are you sure you want to delete?</p>
+    </div>    
+</body>
+</html>

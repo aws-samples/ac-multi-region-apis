@@ -1,0 +1,8 @@
+{
+    "files": [
+        "./gr.html",
+        "./css/style.css",
+		    "./js/aws-sdk.min-dr.js",
+		    "./js/gr.js"
+    ]
+}
