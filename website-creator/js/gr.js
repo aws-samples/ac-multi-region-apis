@@ -467,7 +467,6 @@ async function getClaimablePhoneNumbers() {
 async function getPhoneNumberInfo(phId) {
     try {
         handleWindow(true, '');
-        //var ph = "arn:aws:connect:us-east-1:357837012270:phone-number/a73787b4-de0a-42f1-ad4c-875b25b24d52";
         var ph = await describePhoneNumber(phId);
         console.log(ph);
         formatJSON(ph, '#rpFormatted');
